@@ -1,7 +1,121 @@
 ﻿@page "/"
+@inject IMatToaster Toaster
 
-<h1>Hello, world!</h1>
+<h1>
+    Welcome to InvPeeker
+</h1>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<div class="alert alert-secondary mt-4" role="alert">
+    <span class="oi oi-pencil mr-2" aria-hidden="true"></span>
+    <strong>Paste the string in here</strong>
+
+    <span class="text-nowrap">
+        <MatTextField @bind-Value="@MyString7" Dense="true" TextArea="true" FullWidth="true" Outlined="true" PlaceHolder="Long string inside me pls" TValue="string"></MatTextField>
+    </span>
+</div>
+
+<MatButton Raised="true" Class="mdc-toast-danger" OnClick="@SubmitAsync">Danger</MatButton>
+
+@code {
+
+    private string _myString7;
+
+    public Dictionary<int, string> prefixList = new Dictionary<int, string>();
+    public Dictionary<int, string> itemList = new Dictionary<int, string>();
+    public string pathToItemCSV = @"items.csv";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine(System.IO.Directory.GetCurrentDirectory());
+
+
+        using (System.IO.StreamReader reader = new System.IO.StreamReader(pathToItemCSV))
+        {
+            using (CsvHelper.CsvReader csv = new CsvHelper.CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToLower();
+
+                var records = csv.GetRecords<Data.ItemList>();
+
+                foreach(var record in records)
+                {
+                    itemList.Add(record.ItemID, record.ItemName);
+                }
+            }
+        }
+
+    }
+
+    public string MyString7
+    {
+        get => _myString7;
+        set
+        {
+            _myString7 = value;
+            this.StateHasChanged();
+        }
+    }
+
+    public async Task SubmitAsync()
+    {
+        Show(MatToastType.Warning, "Please wait while we proccess the inventory", "Loading...");
+
+        //Starts
+        _myString7 = "0~" + _myString7;
+        Format(_myString7);
+    }
+    public void Format(string inventory)
+    {
+        //This pattern mathes the first 2 numbers before the squiggly thing (~), that's the item prefix
+        //Afterwards it matches number until a comma is found, this is the item ID
+        //Finally, again match numbers until the end of the string, this is the item ammount
+
+        string pattern = "[0-9]{1,}~[0-9]+,[0-9]+";
+        Regex regex = new Regex(pattern);
+
+        // Find matches.
+        MatchCollection matches = regex.Matches(inventory);
+        List<Data.Item> items = new List<Data.Item>();
+        foreach (Match match in matches)
+        {
+            Data.Item item = new Data.Item();
+            string itemRegex = match.Value;
+
+            string preffix = itemRegex.Split('~')[0];
+            string itemID = itemRegex.Split('~')[1].Split(',')[0];
+            string itemAmmount = itemRegex.Split(',')[1].Split(',')[0];
+
+            item.itemID = ushort.Parse(itemID);
+            item.prefixID = byte.Parse(preffix);
+            item.ammount = ushort.Parse(itemAmmount);
+            item.itemName = itemList[ushort.Parse(itemID)];
+
+            items.Add(item);
+        }
+        foreach(TShockInvPeeker.Data.Item item in items)
+        {
+            Console.WriteLine($"Item ID: {item.itemID}, Item Name: {item.itemName}");
+        }
+
+        // Report the number of matches found.
+        Console.WriteLine($"{matches.Count} matches found in inventory. Data in list: {items.Count}");
+    }
+    public void Show(MatToastType type, string body, string title)
+    {
+        Toaster.Add(body, MatToastType.Success, title, " ", config =>
+        {
+            config.ShowCloseButton = true;
+            config.ShowProgressBar = true;
+            config.MaximumOpacity = 100;
+
+            config.ShowTransitionDuration = 250;
+            config.VisibleStateDuration = 1500;
+            config.HideTransitionDuration = 250;
+
+            config.RequireInteraction = false;
+
+        });
+    }
+}
