@@ -38,7 +38,8 @@ namespace TShockInvPeeker
             });
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<List<Item>>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,8 +65,8 @@ namespace TShockInvPeeker
             });
             BrowserWindowOptions options = new BrowserWindowOptions();
 
-            options.Width = 1000;
-            options.Height = 800;
+            options.Width = 1600;
+            options.Height = 1000;
             options.Fullscreenable = false;
             options.DarkTheme = true;
             options.MinWidth = 1000;
