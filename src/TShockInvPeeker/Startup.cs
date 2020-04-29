@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ElectronNET.API;
+using ElectronNET.API.Entities;
+using MatBlazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -26,6 +28,14 @@ namespace TShockInvPeeker
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMatToaster(config =>
+            {
+                config.Position = MatToastPosition.TopRight;
+                config.PreventDuplicates = true;
+                config.NewestOnTop = true;
+                config.ShowCloseButton = true;
+                config.MaxDisplayedToasts = 100;
+            });
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
@@ -52,8 +62,16 @@ namespace TShockInvPeeker
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+            BrowserWindowOptions options = new BrowserWindowOptions();
 
-            Task.Run(async () => await Electron.WindowManager.CreateWindowAsync());
+            options.Width = 1000;
+            options.Height = 800;
+            options.Fullscreenable = false;
+            options.DarkTheme = true;
+            options.MinWidth = 1000;
+            options.MinHeight = 800;
+            options.Resizable = false;
+            Task.Run(async () => await Electron.WindowManager.CreateWindowAsync(options));
 
         }
     }
