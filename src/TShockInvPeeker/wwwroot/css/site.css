@@ -59,7 +59,7 @@ app {
     }
 
     .sidebar .oi {
-        width: 2rem;
+        width: 1rem;
         font-size: 1.1rem;
         vertical-align: text-top;
         top: -2px;
@@ -180,4 +180,77 @@ app {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
+}
+
+/***INICIA TABLA TERRARIA***/
+#inv_table {
+    float: left;
+    height: 600px;
+    width: inherit;
+    background: url(https://dark-gaming.com/tests/TParser/backgrounds/5.png);
+    border-radius: 8px;
+}
+.item {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    margin-left: 15px;
+    width: 3em;
+    height: 3em;
+    border: solid 1px #1B1585;
+    padding: 5px;
+    background-color: #30308C;
+    position: relative;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0.85;
+}
+.item2 {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    width: 3em;
+    height: 3em;
+    padding: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0.85;
+    display: table;
+    text-align: center;
+}
+    .item2 .img {
+        display: table-cell;
+        vertical-align: middle;
+        margin-left: 20px;
+    }
+    .item2 img {
+        max-height: 30px;
+        max-width: 30px;
+        margin-left: 25px;
+        margin-top: 11px;
+    }
+td .num2 {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+}
+td .num {
+    position: absolute;
+    left: 18px;
+    bottom: 10px;
+    font-size: 90%;
+    font-weight: bold;
+    color: #fff;
+}
+tbody {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans', sans-serif;
+}
+td {
+    position: relative;
 }

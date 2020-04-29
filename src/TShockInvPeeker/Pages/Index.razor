@@ -1,6 +1,6 @@
 ﻿@page "/"
 @inject IMatToaster Toaster
-
+@inject NavigationManager navManager
 <h1>
     Welcome to InvPeeker
 </h1>
@@ -15,16 +15,56 @@
     </span>
 </div>
 
-<MatButton Raised="true" Class="mdc-toast-danger" OnClick="@SubmitAsync">Danger</MatButton>
+<MatButton Raised="true" Class="mdc-toast-danger" OnClick="@SubmitAsync">Submit</MatButton>
+
+@if (items.Count < 1)
+{
+    <p><em>Loading... @items.Count.ToString(); </em></p>
+}
+else
+{
+    <div style="width: 100%;margin-top: 25px;">
+        <table id="inv_table">
+
+            <tbody>
+                @for (int row = 0; row < 10; row++)
+                {
+                <tr>
+                    @for (int block = 0; block < 22; block++)
+                    {
+                        <td>
+                            <div class="item"></div>
+                            <div class="item2">
+                                <div class="img">
+                                    <img title="" src="/Images/Items/@(items[counter].itemID.ToString() +".png") ">
+                                </div>
+                            </div>
+                            <span class="num">@items[counter].ammount</span>
+                        </td>
+                        { counter++; }
+
+                    }
+                    @{if (counter == 220) counter = 0;}
+
+                </tr>
+                }
+             </tbody>
+        </table>
+     </div>
+
+    }
 
 @code {
 
     private string _myString7;
-
+    public int counter = 0;
+    //public int row = 0;
     public Dictionary<int, string> prefixList = new Dictionary<int, string>();
     public Dictionary<int, string> itemList = new Dictionary<int, string>();
     public string pathToItemCSV = @"items.csv";
-
+    public string pathToPrefixCSV = @"prefix.csv";
+    public static List<Data.Item> items = new List<Data.Item>();
+    public bool ready = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,9 +79,24 @@
 
                 var records = csv.GetRecords<Data.ItemList>();
 
-                foreach(var record in records)
+                foreach (var record in records)
                 {
                     itemList.Add(record.ItemID, record.ItemName);
+                }
+            }
+        }
+
+        using (System.IO.StreamReader reader = new System.IO.StreamReader(pathToPrefixCSV))
+        {
+            using (CsvHelper.CsvReader csv = new CsvHelper.CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                csv.Configuration.PrepareHeaderForMatch = (string header, int index) => header.ToLower();
+
+                var records = csv.GetRecords<Data.PrefixList>();
+
+                foreach (var record in records)
+                {
+                    prefixList.Add(record.PrefixID, record.PrefixName);
                 }
             }
         }
@@ -63,8 +118,11 @@
         Show(MatToastType.Warning, "Please wait while we proccess the inventory", "Loading...");
 
         //Starts
+        items.Clear();
         _myString7 = "0~" + _myString7;
         Format(_myString7);
+        ready = true;
+        // navManager.NavigateTo("/inventory");
     }
     public void Format(string inventory)
     {
@@ -77,7 +135,6 @@
 
         // Find matches.
         MatchCollection matches = regex.Matches(inventory);
-        List<Data.Item> items = new List<Data.Item>();
         foreach (Match match in matches)
         {
             Data.Item item = new Data.Item();
@@ -91,12 +148,14 @@
             item.prefixID = byte.Parse(preffix);
             item.ammount = ushort.Parse(itemAmmount);
             item.itemName = itemList[ushort.Parse(itemID)];
+            /*if (item.prefixID != 0) */
+            item.prefixName = prefixList[item.prefixID];
 
             items.Add(item);
         }
-        foreach(TShockInvPeeker.Data.Item item in items)
+        foreach (TShockInvPeeker.Data.Item item in items)
         {
-            Console.WriteLine($"Item ID: {item.itemID}, Item Name: {item.itemName}");
+            Console.WriteLine($"Item ID: {item.itemID},Prefix: {item.prefixName}, Item Name: {item.itemName}, Ammount: {item.ammount}");
         }
 
         // Report the number of matches found.
